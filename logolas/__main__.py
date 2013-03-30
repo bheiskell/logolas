@@ -5,7 +5,10 @@ from logolas.handler import Handler
 from logolas.logfile import LogFile
 from logolas.parser import Parser
 from logolas.sink import Sink
+import logging
 import pyinotify
+
+_LOG = logging.getLogger(__name__)
 
 def test(regexs, tests):
     """Perform tests."""
@@ -14,10 +17,10 @@ def test(regexs, tests):
         parser = Parser(regex['regex'])
         results = parser.parse(tests[pattern])
 
-        print "Pattern", pattern
+        _LOG.info("Pattern %s", pattern)
         for result in results:
             _dict = dict(zip(regex['order'], result))
-            print "\t", _dict
+            _LOG.info("\t%s", _dict)
 
         if len(results) < len(tests[pattern]):
             raise ValueError("Not all configured tests matched the regex!")
@@ -25,6 +28,8 @@ def test(regexs, tests):
 
 def main():
     """Begin watching logs."""
+
+    logging.basicConfig(level=logging.DEBUG)
 
     configuration = Configuration()
     configuration.load_yaml('sample/config.yml')

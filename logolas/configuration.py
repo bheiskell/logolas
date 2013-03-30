@@ -71,5 +71,4 @@ class Configuration(object):
         return models
 
     def __str__(self):
-        print "getste"
         return dump(self.configuration, Dumper=Dumper, default_flow_style=False)
