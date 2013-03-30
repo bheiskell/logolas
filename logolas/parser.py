@@ -8,12 +8,12 @@ class Parser: #pylint: disable=R0903
         self.regex = regex
 
     def parse(self, lines):
-        """Parse the list with our regular expression."""
+        """Parse the list with our regular expression. Return an ordered list of matches."""
 
-        result = []
+        results = []
 
         for line in lines:
             match = re.search(self.regex, line)
             if match:
-                result.append(match.groups())
-        return result
+                results.append(match.groups())
+        return results
