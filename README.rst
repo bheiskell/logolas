@@ -20,6 +20,10 @@ Features
 * Filtering on any matched field
 * Access to historical data (admittedly a bit awkward)
 
+Limitations
+-----------
+* Cannot parse timezones currently.
+
 Why?
 ----
 
