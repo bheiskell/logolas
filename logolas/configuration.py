@@ -50,6 +50,16 @@ class Configuration(object):
 
         return regexs
 
+    def get_tests(self):
+        """Get a dictionary of pattern names to regex tests."""
+
+        tests = {}
+        for _file in self.configuration['files']:
+            for pattern in _file['patterns']:
+                tests[pattern['name']] = pattern['tests']
+
+        return tests
+
     def get_models(self):
         """Get a dictionary of pattern names to fields."""
 
