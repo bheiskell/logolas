@@ -5,6 +5,7 @@ from logolas.handler import Handler
 from logolas.logfile import LogFile
 from logolas.parser import Parser
 from logolas.sink import Sink
+
 import logging
 
 _LOG = logging.getLogger(__name__)
