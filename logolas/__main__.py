@@ -3,7 +3,6 @@
 from logolas.configuration import Configuration
 from logolas.handler import Handler
 from logolas.logfile import LogFile
-from logolas.notifier import LogNotifier
 from logolas.parser import Parser
 from logolas.sink import Sink
 import pyinotify
@@ -61,7 +60,7 @@ def main():
     # pylint incorrectly reand the pyinotify constant #pylint: disable=E1101
     mask         = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
     watchmanager = pyinotify.WatchManager()
-    notifier     = pyinotify.Notifier(watchmanager, LogNotifier(handler))
+    notifier     = pyinotify.Notifier(watchmanager, handler)
 
     for _file in configuration.get_files():
         watchmanager.add_watch(_file, mask)
