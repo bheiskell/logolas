@@ -46,7 +46,7 @@ class Handler(pyinotify.ProcessEvent):
             self.handle(filename)
 
     def handle(self, filename):
-        """Handle changes to a file."""
+        """Parse all new lines and sink the results."""
 
         _LOG.debug("Handling %s", filename)
 
