@@ -8,12 +8,12 @@ _LOG = logging.getLogger(__name__)
 class Handler(pyinotify.ProcessEvent):
     """Dispatch inotify events to the Handler."""
 
-    def __init__(self, log_files, parsers, sinks):
+    def __init__(self, files, parsers, sinks):
         pyinotify.ProcessEvent.__init__(self)
 
-        self.log_files = log_files
-        self.parsers   = parsers
-        self.sinks     = sinks
+        self.files   = files
+        self.parsers = parsers
+        self.sinks   = sinks
 
     def process_IN_MOVE_SELF(self, event): #pylint: disable=C0103
         """Handle a file move event."""
@@ -37,12 +37,12 @@ class Handler(pyinotify.ProcessEvent):
         """Reload a file."""
 
         _LOG.info("Reloading %s", filename)
-        self.log_files[filename].reload()
+        self.files[filename].reload()
 
     def handle_all(self):
         """Handle all files."""
 
-        for filename in self.log_files.keys():
+        for filename in self.files.keys():
             self.handle(filename)
 
     def handle(self, filename):
@@ -50,21 +50,23 @@ class Handler(pyinotify.ProcessEvent):
 
         _LOG.debug("Handling %s", filename)
 
-        lines = self.log_files[filename].read()
+        lines = self.files[filename].read()
         for parser in self.parsers[filename]:
             results = parser.parse(lines)
             self.sinks[parser].sink(results)
 
     @staticmethod
-    def get_notifier(handler, files):
+    def get_notifier(handler):
         """Factory for generating a pyinotify.Notifier compatible with Handler."""
 
         # pylint incorrectly reand the pyinotify constant #pylint: disable=E1101
         watchmanager = pyinotify.WatchManager()
         mask = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
 
-        for _file in files:
-            watchmanager.add_watch(_file, mask)
+        filenames = handler.files.keys()
+
+        for filename in filenames:
+            watchmanager.add_watch(filename, mask)
 
         return pyinotify.Notifier(watchmanager, handler)
 

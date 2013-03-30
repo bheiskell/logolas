@@ -38,15 +38,15 @@ def main():
     models = configuration.get_models()
     regexs = configuration.get_regexs()
     parsers = {}
-    log_files = {}
+    files = {}
     sinks = {}
-    for filename, categorys in configuration.get_files().items():
+    for filename, categories in configuration.get_files().items():
 
-        log_files[filename] = LogFile(filename)
+        files[filename] = LogFile(filename)
 
         parsers[filename] = []
 
-        for category in categorys:
+        for category in categories:
             parser = Parser(regexs[category]['regex'])
             parsers[filename].append(parser)
 
@@ -56,8 +56,8 @@ def main():
                 order=regexs[category]['order']
             )
 
-    handler = Handler(log_files, parsers, sinks)
-    notifier = Handler.get_notifier(handler, log_files.keys())
+    handler = Handler(files, parsers, sinks)
+    notifier = Handler.get_notifier(handler)
     handler.handle_all()
     while True:
         try:
