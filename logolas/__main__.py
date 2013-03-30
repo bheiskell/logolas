@@ -6,6 +6,8 @@ from logolas.logfile import LogFile
 from logolas.parser import Parser
 from logolas.sink import Sink
 
+from sqlalchemy import create_engine, Table, Column, Integer, DateTime, String, MetaData
+
 import logging
 
 _LOG = logging.getLogger(__name__)
@@ -14,15 +16,14 @@ def test(regexs, tests):
     """Perform tests."""
 
     for pattern, regex in regexs.items():
-        parser = Parser(regex['regex'])
-        results = parser.parse(tests[pattern])
+        parser = Parser(regex['regex'], regex['order'], None)
+        matches = parser.parse(tests[pattern])
 
         _LOG.info("Pattern %s", pattern)
-        for result in results:
-            _dict = dict(zip(regex['order'], result))
-            _LOG.info("\t%s", _dict)
+        for match in matches:
+            _LOG.info("\t%s", match)
 
-        if len(results) < len(tests[pattern]):
+        if len(matches) < len(tests[pattern]):
             raise ValueError("Not all configured tests matched the regex!")
 
 
@@ -33,6 +34,9 @@ def main():
 
     configuration = Configuration()
     configuration.load_yaml('sample/config.yml')
+
+    engine = create_engine('sqlite:///:memory:', echo=True, pool_recycle=3600)
+    metadata = MetaData()
 
     test(configuration.get_regexs(), configuration.get_tests())
 
@@ -48,14 +52,30 @@ def main():
         parsers[filename] = []
 
         for category in categories:
-            parser = Parser(regexs[category]['regex'])
+            parser = Parser(
+                regexs[category]['regex'],
+                regexs[category]['order'],
+                None
+            )
+
             parsers[filename].append(parser)
 
-            sinks[parser] = Sink(
-                category=category,
-                fields=models[category],
-                order=regexs[category]['order']
+            model = Table(
+                category,
+                metadata,
+                Column('id', Integer, primary_key=True),
+                Column('time', DateTime)
             )
+
+            for field in models[category]:
+                model.append_column(Column(field, String))
+
+            sinks[parser] = Sink(
+                engine=engine,
+                model=model
+            )
+
+    metadata.create_all(engine)
 
     handler = Handler(files, parsers, sinks)
     notifier = Handler.get_notifier(handler)
