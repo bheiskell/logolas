@@ -39,12 +39,6 @@ class Handler(pyinotify.ProcessEvent):
         _LOG.info("Reloading %s", filename)
         self.files[filename].reload()
 
-    def handle_all(self):
-        """Handle all files."""
-
-        for filename in self.files.keys():
-            self.handle(filename)
-
     def handle(self, filename):
         """Parse all new lines and sink the results."""
 
@@ -54,6 +48,12 @@ class Handler(pyinotify.ProcessEvent):
         for parser in self.parsers[filename]:
             results = parser.parse(lines)
             self.sinks[parser].sink(results)
+
+    def handle_all(self):
+        """Handle all files."""
+
+        for filename in self.files.keys():
+            self.handle(filename)
 
     @staticmethod
     def get_notifier(handler):
