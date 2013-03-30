@@ -26,6 +26,9 @@ class Configuration(object):
                 Configuration.version
             ))
 
+    def __str__(self):
+        return dump(self.configuration, Dumper=Dumper, default_flow_style=False)
+
     def get_files(self):
         """Get a filename to pattern names mapping."""
 
@@ -69,6 +72,3 @@ class Configuration(object):
                 models[pattern['name']] = pattern['fields']
 
         return models
-
-    def __str__(self):
-        return dump(self.configuration, Dumper=Dumper, default_flow_style=False)
