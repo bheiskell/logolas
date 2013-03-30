@@ -1,5 +1,8 @@
 from setuptools import setup
 
+# http://stackoverflow.com/questions/9352656/python-assertionerror-when-running-nose-tests-with-coverage
+from multiprocessing import util
+
 setup(
     name = "Logolas",
     version = "1.0.0",
@@ -19,8 +22,10 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        'flask',
-        'sqlalchemy',
-        'pyinotify',
+        'flask==0.9',
+        'sqlalchemy==0.8.0',
+        'pyinotify==0.9.4',
     ],
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )
