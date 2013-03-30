@@ -6,7 +6,6 @@ from logolas.logfile import LogFile
 from logolas.parser import Parser
 from logolas.sink import Sink
 import logging
-import pyinotify
 
 _LOG = logging.getLogger(__name__)
 
@@ -57,27 +56,14 @@ def main():
                 order=regexs[category]['order']
             )
 
-        #handle(filename)
-
     handler = Handler(log_files, parsers, sinks)
+    notifier = Handler.get_notifier(handler, log_files.keys())
     handler.handle_all()
-
-    # pylint incorrectly reand the pyinotify constant #pylint: disable=E1101
-    mask         = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
-    watchmanager = pyinotify.WatchManager()
-    notifier     = pyinotify.Notifier(watchmanager, handler)
-
-    for _file in configuration.get_files():
-        watchmanager.add_watch(_file, mask)
-
     while True:
         try:
-            notifier.process_events()
-            if notifier.check_events():
-                notifier.read_events()
+            Handler.handle_events(notifier)
 
         except KeyboardInterrupt:
-            notifier.stop()
             break
 
 if __name__ == '__main__':

@@ -9,11 +9,11 @@ class Handler(pyinotify.ProcessEvent):
     """Dispatch inotify events to the Handler."""
 
     def __init__(self, log_files, parsers, sinks):
+        pyinotify.ProcessEvent.__init__(self)
+
         self.log_files = log_files
         self.parsers   = parsers
         self.sinks     = sinks
-
-        pyinotify.ProcessEvent.__init__(self)
 
     def process_IN_MOVE_SELF(self, event): #pylint: disable=C0103
         """Handle a file move event."""
@@ -54,3 +54,30 @@ class Handler(pyinotify.ProcessEvent):
         for parser in self.parsers[filename]:
             results = parser.parse(lines)
             self.sinks[parser].sink(results)
+
+    @staticmethod
+    def get_notifier(handler, files):
+        """Factory for generating a pyinotify.Notifier compatible with Handler."""
+
+        # pylint incorrectly reand the pyinotify constant #pylint: disable=E1101
+        watchmanager = pyinotify.WatchManager()
+        mask = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
+
+        for _file in files:
+            watchmanager.add_watch(_file, mask)
+
+        return pyinotify.Notifier(watchmanager, handler)
+
+    @staticmethod
+    def handle_events(notifier):
+        """Wrapper for processing pyinotify.Notifier events."""
+
+        try:
+            notifier.process_events()
+            if notifier.check_events():
+                notifier.read_events()
+
+        except KeyboardInterrupt, exception:
+            notifier.stop()
+            raise exception
+
