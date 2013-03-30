@@ -1,4 +1,4 @@
---- # In memory database
+version : 1
 database: sqlite:///:memory:
 files:
     - path: sample_server.log
