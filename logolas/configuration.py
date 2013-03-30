@@ -1,70 +1,65 @@
-"""
-Load and return Logolas's configuration.
-"""
-models = {
-    'join':    ('time', 'user', 'ip'),
-    'leave':   ('time', 'user'),
-    'chat':    ('time', 'user', 'channel', 'message'),
-    'pm':      ('time', 'user', 'recipient', 'message'),
-    'ban':     ('time', 'user', 'admin', 'reason'),
-    'command': ('time', 'user', 'command'),
-    'shop':    ('time', 'user', 'action', 'amount', 'item', 'price', 'shop', 'location'),
-}
+"""Load and return Logolas's configuration."""
 
-regexs = {
-    'join': {
-        'regex': r'([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+)\[\/([0-9.]+)[^\]]+\] logged in.*',
-        'order': ('date', 'time', 'user', 'ip'),
-    },
-    'leave': {
-        'regex': r'([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+) lost connection: disconnect.quitting',
-        'order': ('date', 'time', 'user'),
-    },
-    #'chat': {
-    #    'regex': '([0-9-]+) ([0-9:]+) \[INFO\] \[([^\]]+)\] ([^ ]+)[^:]*: (.*)',
-    #    'order': ('date', 'time', 'channel', 'user', 'message'),
-    #},
-    #'pm': {
-    #    'regex': '([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+) -> ([^ ]+): (.*)',
-    #    'order': ('date', 'time', 'user', 'recipient', 'message'),
-    #},
-    'chat': {
-        'regex': r'([0-9.]+) ([0-9:]+) \[([^\]]+)\] ([^ ]+)[^:]*: (.*)',
-        'order': ('date', 'time', 'channel', 'user', 'message'),
-    },
-    'pm': {
-        'regex': r'([0-9.]+) ([0-9:]+) ([^ ]+) -> ([^ ]+): (.*)',
-        'order': ('date', 'time', 'user', 'recipient', 'message'),
-    },
-    'ban': {
-        'regex': r"([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+): Banned player ([^ ]+)(.*)",
-        'order': ('date', 'time', 'admin', 'user', 'reason'),
-    },
-    'command': {
-        'regex': r'([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+) issued server command: (.*)',
-        'order': ('date', 'time', 'user', 'command'),
-    },
-    'shop': {
-        'regex': r'([0-9-]+) ([0-9:]+) \[INFO\] \[ChestShop\] ([^ ]+) ([^ ]+) ([0-9]+) ([^ ]+) for ([0-9.]+) [fromto]+ (.*) at (.*)',
+from yaml import load, dump
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
-        'order': ('date', 'time', 'user', 'action', 'amount', 'item', 'price', 'shop', 'location'),
-    },
-}
+class Configuration(object):
+    """Logolas configuration"""
 
-files = {
-    '/home/minecraft/usr/server.log': [
-        'join',
-        'leave',
-        'shop',
-        'command',
-        #'chat',
-        #'pm',
-        'ban',
-    ],
-    '/home/minecraft/usr/plugins/Herochat/logs/chat.0.0.log': [
-        'chat',
-        'pm',
-    ],
-    #'/home/minecraft/usr/plugins/CommandBook/bans.0.0.log': [
-    #],
-}
+    version = 1
+
+    def __init__(self):
+        self.configuration = None
+
+    def load_yaml(self, filename):
+        """Load configuration from a yaml file."""
+
+        with file(filename) as file_in:
+            self.configuration = load(file_in, Loader=Loader)
+
+        if not self.configuration['version'] == Configuration.version:
+            raise ValueError('Version %s found - expected version %d' % (
+                self.configuration['version'],
+                Configuration.version
+            ))
+
+    def get_files(self):
+        """Get a filename to pattern names mapping."""
+
+        files = {}
+        for _file in self.configuration['files']:
+            files[_file['path']] = []
+            for pattern in _file['patterns']:
+                files[_file['path']].append(pattern['name'])
+
+        return files
+
+    def get_regexs(self):
+        """Get a dictionary of pattern names to regex / extracted fields."""
+
+        regexs = {}
+        for _file in self.configuration['files']:
+            for pattern in _file['patterns']:
+                regexs[pattern['name']] = {
+                    'regex': pattern['regex'],
+                    'order': pattern['fields'],
+                }
+
+        return regexs
+
+    def get_models(self):
+        """Get a dictionary of pattern names to fields."""
+
+        models = {}
+        for _file in self.configuration['files']:
+            for pattern in _file['patterns']:
+                models[pattern['name']] = pattern['fields']
+
+        return models
+
+    def __str__(self):
+        print "getste"
+        return dump(self.configuration, Dumper=Dumper, default_flow_style=False)

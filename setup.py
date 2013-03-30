@@ -28,6 +28,7 @@ setup(
         'flask==0.9',
         'sqlalchemy==0.8.0',
         'pyinotify==0.9.4',
+        'pyyaml==3.10',
     ],
     test_suite='nose.collector',
     tests_require=['nose'],
