@@ -14,6 +14,9 @@ setup(
     long_description=open('README.rst').read(),
     packages=['logolas',],
     url = "http://github.com/bheiskell/logolas",
+    entry_points = {
+        'console_scripts': ['logolas=logolas.__main__:main'],
+    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',

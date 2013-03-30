@@ -317,19 +317,20 @@ if True:
 ## Main ########################################################################
 ################################################################################
 
-mask         = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
-watchmanager = pyinotify.WatchManager()
-notifier     = pyinotify.Notifier(watchmanager, LogNotifier())
+def main():
+    mask         = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
+    watchmanager = pyinotify.WatchManager()
+    notifier     = pyinotify.Notifier(watchmanager, LogNotifier())
 
-for file in files:
-    wdd = watchmanager.add_watch(file, mask)
+    for file in files:
+        wdd = watchmanager.add_watch(file, mask)
 
-while True:
-    try:
-        notifier.process_events()
-        if notifier.check_events():
-            notifier.read_events()
+    while True:
+        try:
+            notifier.process_events()
+            if notifier.check_events():
+                notifier.read_events()
 
-    except KeyboardInterrupt:
-        notifier.stop()
-        break
+        except KeyboardInterrupt:
+            notifier.stop()
+            break
