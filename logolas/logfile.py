@@ -3,7 +3,6 @@
 class LogFile:
     """Maintains the filehandle for a given filename."""
 
-
     def __init__(self, filename):
         self.filename = filename
         self.filehandle = None
@@ -29,4 +28,3 @@ class LogFile:
         """Close the file."""
 
         self.filehandle.close()
-
