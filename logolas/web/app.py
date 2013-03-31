@@ -78,6 +78,10 @@ def _get_logic(columns, filters):
         else:
             pass
         current_app.logger.debug(logic)
+
+    if logic == None:
+        logic = True
+
     return logic
 
 @logolas.route('/log')
