@@ -30,21 +30,21 @@ class Sink: #pylint: disable=R0903
 
         mapper(self.model, self.table)
 
-    def get_latest(self, session):
+    def _get_latest(self, session):
         """Get the time for the latest entry in this Sink."""
-        self.latest = session.query(func.max(self.table.columns.time)).scalar()
+        latest = session.query(func.max(self.table.columns.time)).scalar()
 
-        _LOG.info("Latest entry in %s %s", self.table, self.latest)
+        _LOG.info("Latest entry in %s %s", self.table, latest)
+
+        return latest
 
     def sink(self, entries):
         """Persist the lines to the database."""
 
-        _LOG.error(dir())
-
         session = self.sessionmaker()
 
         if self.latest == None:
-            self.get_latest(session)
+            self.latest = self._get_latest(session)
 
         for entry in entries:
 
