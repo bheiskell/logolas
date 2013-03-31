@@ -2,9 +2,9 @@
 
 from flask import render_template, jsonify, Blueprint, current_app, request
 from flask.ext.sqlalchemy import SQLAlchemy #pylint: disable=E0611,F0401
-from sqlalchemy import or_, and_, desc
-
-import re
+from logolas.web.query import is_search_applicable, get_query_filter
+from logolas.web.url import get_filters
+from sqlalchemy import desc
 
 logolas = Blueprint('logolas', __name__, template_folder='templates') #pylint: disable=C0103
 
@@ -24,19 +24,19 @@ def field():
 def log():
     """Retrieve log entries."""
 
-    filters = _get_filters(request.args)
+    filters = get_filters(request.args)
     limit   = int(request.args['limit'])
 
     current_app.logger.debug("Request (limit %s) %s", limit, filters)
 
     logs = []
     for (table, model) in current_app.config['logolas']['tables']:
-        if _applicable(table.columns, filters):
+        if is_search_applicable(table.columns, filters):
             query = db.session.query(model)
 
             columns = dict((column.name, column) for column in table.columns)
 
-            logic = _get_logic(columns, filters)
+            logic = get_query_filter(columns, filters)
 
             query = query.filter(logic).order_by(desc(columns['time'])).limit(limit)
 
@@ -58,59 +58,3 @@ def log():
     logs = logs[-limit:]
 
     return jsonify(logs=logs)
-
-def _get_filters(args):
-    """Extract the filters from the URL."""
-    filters = {}
-
-    for parameter, argument in args.items():
-        match = re.search(r'filters\[([0-9]+)\]\[([a-z]+)\]', parameter)
-        if match:
-            (_index, _field) = match.groups()
-            if not _index in filters:
-                filters[_index] = {}
-            filters[_index][_field] = argument
-
-    return filters.values()
-
-def _applicable(columns, filters):
-    """Determines if this filter is applicable to these columns."""
-    result = True
-
-    for _filter in filters:
-        if _filter['column'] not in [ column.name for column in columns ]:
-            result = False
-
-    return result
-
-def _get_logic(columns, filters):
-    """Get boolean logic for the query filter."""
-    logic = None
-    for _filter in filters:
-        conditional = None
-        if _filter['operator'] == '==':
-            conditional = columns[_filter['column']] == _filter['filter']
-        elif _filter['operator'] == '>=':
-            conditional = columns[_filter['column']] >= _filter['filter']
-        elif _filter['operator'] == '<=':
-            conditional = columns[_filter['column']] <= _filter['filter']
-        elif _filter['operator'] == 'LIKE':
-            conditional = columns[_filter['column']].like(_filter['filter'])
-        else:
-            raise ValueError('%s is not a valid operator', _filter['operator'])
-
-        if logic is None:
-            logic = conditional
-        elif _filter['conditional'] == 'AND':
-            logic = and_(conditional, logic)
-        elif _filter['conditional'] == 'OR':
-            logic = or_(conditional, logic)
-        else:
-            raise ValueError('%s is not a valid conditional', _filter['conditional'])
-
-    # If no logic is set, it's easier to just return true for use in the filter.
-    if logic is None:
-        logic = True
-
-    return logic
-
