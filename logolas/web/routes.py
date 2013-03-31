@@ -19,7 +19,7 @@ def index():
 def field():
     """Retrieve fields list."""
 
-    return jsonify(fields=current_app.config['logolas_fields'])
+    return jsonify(fields=current_app.config['logolas']['fields'])
 
 def _get_filters():
     """Extract the filters from the URL."""
@@ -88,7 +88,7 @@ def log():
 
     limit = request.args['limit']
     filters = _get_filters()
-    tables = current_app.config['logolas_tables']
+    tables = current_app.config['logolas']['tables']
 
     current_app.logger.debug("Request (limit %s) %s", limit, filters)
     current_app.logger.debug(tables)

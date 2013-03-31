@@ -6,8 +6,27 @@ from logolas.model import get_table
 
 db = SQLAlchemy() #pylint: disable=C0103
 
+def _config(configuration):
+    """Get Logolas web configuration."""
+
+    fields = []
+    for patterns in configuration.get_file_to_patterns().values():
+        for pattern in patterns.values():
+            fields.extend(pattern['fields'])
+
+    fields = list(frozenset(fields))
+
+    tables = []
+    for patterns in configuration.get_file_to_patterns().values():
+        for name, pattern in patterns.items():
+            pair = get_table(db.metadata, name, pattern['fields'], pattern['order'])
+            tables.append(pair)
+
+    return { 'fields': fields, 'tables': tables }
+
 def application(configuration):
     """Application factory."""
+
     app = Flask(__name__)
 
     from logolas.web.routes import logolas
@@ -17,20 +36,8 @@ def application(configuration):
 
     db.init_app(app)
 
-    fields = []
+    app.config['logolas'] = _config(configuration)
 
-    for patterns in configuration.get_file_to_patterns().values():
-        for pattern in patterns.values():
-            fields.extend(pattern['fields'])
-
-    app.logger.info("Fields %s:", fields)
-    app.config['logolas_fields'] = list(frozenset(fields))
-
-    app.config['logolas_tables'] = []
-    metadata = db.metadata
-    for patterns in configuration.get_file_to_patterns().values():
-        for name, pattern in patterns.items():
-            (table, model) = get_table(metadata, name, pattern['fields'], pattern['order']) #pylint: disable=W0612
-            app.config['logolas_tables'].append((table, model))
+    app.logger.debug(app.config['logolas'])
 
     return app
