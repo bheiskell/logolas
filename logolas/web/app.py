@@ -79,7 +79,7 @@ def _get_logic(columns, filters):
             pass
         current_app.logger.debug(logic)
 
-    if logic == None:
+    if logic is None:
         logic = True
 
     return logic
