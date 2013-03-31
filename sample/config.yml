@@ -7,6 +7,7 @@ files:
     datetime-format: '%Y.%m.%d %H:%M:%S'
     regex:           '([0-9.]+) ([0-9:]+) \[([^\]]+)\] ([^ ]+)[^:]*: (.*)'
     fields:          [ date, time, channel, user, message ]
+    order:           [ channel, user, message ]
     tests:
     - '2013.01.01 00:00:00 [Channel] UserA: singleword!'
     - '2013.01.01 10:00:00 [Channel] UserA: multi word!'
@@ -15,6 +16,7 @@ files:
   - name:            'apache_access'
     datetime-format: '%d/%b/%Y %H:%M:%S'
     regex:           '([0-9.]+) [^ ]+ ([^ ]+) \[([^:]+):([^ ]+) [^\]]+\] "([A-Z]+) ([^"]+)" ([0-9]+) ([0-9]+) ("[^"]+") ("[^"]+")'
-    fields:          [ ip, user, date, time, method, rspcode, length, path referer ]
+    fields:          [ ip, user, date, time, method, rspcode, length, path, referer ]
+    order:           [ ip, user, method, rspcode, length, path, referer ]
     tests:
     - '10.0.0.1 - admin [01/Jan/2013:00:00:00 -0500] "GET /" 200 100 "http://example.com/" "Mozilla/5.0 (Windows NT 6.0; rv:19.0) Gecko/20100101 Firefox/19.0"'

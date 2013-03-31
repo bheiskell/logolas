@@ -7,30 +7,35 @@ files:
     datetime-format: '%Y-%m-%d %H:%M:%S'
     regex:           '([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+)\[\/([0-9.]+)[^\]]+\] logged in.*'
     fields:          [ date, time, user, ip ]
+    order:           [ user, ip ]
     tests:
     - '2012-09-02 07:54:57 [INFO] UserA[/122.49.155.77:60073] logged in with entity id 3886922 at ([alendria] -403.5180933748426, 99.0, 221.38148706833465)'
   - name:            'leave_log'
     datetime-format: '%Y-%m-%d %H:%M:%S'
     regex:           '([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+) lost connection: disconnect.quitting'
     fields:          [ date, time, user ]
+    order:           [ user ]
     tests:
     - '2012-09-02 07:54:39 [INFO] UserA lost connection: disconnect.quitting'
   - name:            'ban_log'
     datetime-format: '%Y-%m-%d %H:%M:%S'
     regex:           '([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+): Banned player ([^ ]+)(.*)'
     fields:          [ date, time, admin, user, reason ]
+    order:           [ admin, user, reason ]
     tests:
     - '2013-03-09 09:26:00 [INFO] UserB: Banned player UserC'
   - name:            'command_log'
     datetime-format: '%Y-%m-%d %H:%M:%S'
     regex:           '([0-9-]+) ([0-9:]+) \[INFO\] ([^ ]+) issued server command: (.*)'
     fields:          [ date, time, user, command ]
+    order:           [ user, command ]
     tests:
     - '2012-08-26 10:31:49 [INFO] UserA issued server command: /spawn'
   - name:            'shop_log'
     datetime-format: '%Y-%m-%d %H:%M:%S'
     regex:           '([0-9-]+) ([0-9:]+) \[INFO\] \[ChestShop\] ([^ ]+) ([^ ]+) ([0-9]+) ([^ ]+) for ([0-9.]+) [fromto]+ (.*) at (.*)'
     fields:          [ date, time, user, action, amount, item, price, shop, location ]
+    order:           [ user, action, amount, item, price, shop, location ]
     tests:
     - '2013-03-30 17:42:00 [INFO] [ChestShop] UserA bought 64 Stone for 35.00 from Admin Shop at [world] -297, 87, 229'
     - '2013-03-30 18:56:23 [INFO] [ChestShop] UserB sold 1 Potion:8194 for 30.00 to Admin Shop at [world] -259, 87, 214'
@@ -40,11 +45,13 @@ files:
     datetime-format: '%Y.%m.%d %H:%M:%S'
     regex:           '([0-9.]+) ([0-9:]+) \[([^\]]+)\] ([^ ]+)[^:]*: (.*)'
     fields:          [ date, time, channel, user, message ]
+    order:           [ channel, user, message ]
     tests:
     - '2012.08.26 10:49:39 [Channel] UserA: hello'
   - name:            'pm_log'
     datetime-format: '%Y.%m.%d %H:%M:%S'
     regex:           '([0-9.]+) ([0-9:]+) ([^ ]+) -> ([^ ]+): (.*)'
     fields:          [ date, time, user, recipient, message ]
+    order:           [ user, recipient, message ]
     tests:
     - '2012.08.26 10:33:13 UserA -> UserB: hello hello'
