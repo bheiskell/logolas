@@ -18,7 +18,7 @@ class Sink: #pylint: disable=R0903
         self.engine = engine
         self.sessionmaker = sessionmaker(bind=engine)
         self.table = model
-        self.latest = None
+        self.latest_at_start = None
 
         class Model(object):
             """Hackidacorus code to allow for dynamic Model generation."""
@@ -43,12 +43,12 @@ class Sink: #pylint: disable=R0903
 
         session = self.sessionmaker()
 
-        if self.latest == None:
-            self.latest = self._get_latest(session)
+        if self.latest_at_start == None:
+            self.latest_at_start = self._get_latest(session)
 
         for entry in entries:
 
-            if self.latest == None or entry['datetime'] >= str(self.latest):
+            if self.latest_at_start == None or entry['datetime'] >= str(self.latest_at_start):
 
                 query = session.query(func.count(self.table.columns.time))
 
@@ -56,10 +56,7 @@ class Sink: #pylint: disable=R0903
                     query = query.filter(self.table.columns.get(field) == value)
 
                 if 0 == query.scalar():
-                    _LOG.info("%s >= %s: %s", \
-                        entry['datetime'], \
-                        self.latest, \
-                        entry.values())
+                    _LOG.info("%s : %s", entry['datetime'], entry.values())
 
                     session.add(self.model(entry))
 
