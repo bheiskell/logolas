@@ -48,7 +48,7 @@ class Sink: #pylint: disable=R0903
 
         for entry in entries:
 
-            if self.latest_at_start == None or entry['datetime'] >= str(self.latest_at_start):
+            if self.latest_at_start == None or entry['time'] >= self.latest_at_start:
 
                 query = session.query(func.count(self.table.columns.time))
 
@@ -56,7 +56,7 @@ class Sink: #pylint: disable=R0903
                     query = query.filter(self.table.columns.get(field) == value)
 
                 if 0 == query.scalar():
-                    _LOG.info("%s : %s", entry['datetime'], entry.values())
+                    _LOG.info("%s : %s", entry['time'], entry.values())
 
                     session.add(self.model(entry))
 

@@ -16,16 +16,17 @@ class Parser: #pylint: disable=R0903
         results = []
 
         for line in lines:
-            match = re.search(self.regex, line)
+            match = re.search(self.regex, line.decode("utf-8"))
+
             if match:
                 result = dict(zip(self.order, match.groups()))
 
                 # standardize date & time to datetime
                 if 'date' in result and 'time' in result:
-                    result['datetime'] = "%s %s" % (result.pop('date'), result.pop('time'))
+                    result['time'] = "%s %s" % (result.pop('date'), result.pop('time'))
 
                 # parse input datetime to an actual datetime object
-                result['datetime'] = datetime.strptime(result['datetime'], self.datetime_format)
+                result['time'] = datetime.strptime(result['time'], self.datetime_format)
 
                 results.append(result)
 

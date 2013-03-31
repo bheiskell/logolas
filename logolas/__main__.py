@@ -68,7 +68,8 @@ def main():
             )
 
             for field in models[category]:
-                model.append_column(Column(field, String))
+                if field not in ['time', 'date']:
+                    model.append_column(Column(field, String))
 
             sinks[parser] = Sink(
                 engine=engine,
