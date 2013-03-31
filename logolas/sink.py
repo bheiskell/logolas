@@ -34,6 +34,7 @@ class Sink: #pylint: disable=R0903
 
         session = self.sessionmaker()
 
+        # This value can be None at start or if the table is empty.
         if self.latest_at_start == None:
             self.latest_at_start = self._get_latest(session)
 

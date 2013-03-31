@@ -21,11 +21,12 @@ class Parser: #pylint: disable=R0903
             if match:
                 result = dict(zip(self.order, match.groups()))
 
-                # standardize date & time to datetime
+                # Standardize date & time to datetime
                 if 'date' in result and 'time' in result:
                     result['time'] = "%s %s" % (result.pop('date'), result.pop('time'))
 
-                # parse input datetime to an actual datetime object
+                # Parse input datetime to an actual datetime object. Reusing
+                # time here because some databases treat datetime as a key word.
                 result['time'] = datetime.strptime(result['time'], self.datetime_format)
 
                 results.append(result)

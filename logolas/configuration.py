@@ -29,47 +29,19 @@ class Configuration(object):
     def __str__(self):
         return dump(self.configuration, Dumper=Dumper, default_flow_style=False)
 
-    def get_files(self):
-        """Get a filename to pattern names mapping."""
+    def get_database_uri(self):
+        """Get the database URI."""
+        return self.configuration['database']
+
+    def get_file_to_patterns(self):
+        """Get a multi-dimensional dict representing filenames -> name -> pattern."""
 
         files = {}
         for _file in self.configuration['files']:
-            files[_file['path']] = []
+            filename = _file['path']
+            files[filename] = {}
+
             for pattern in _file['patterns']:
-                files[_file['path']].append(pattern['name'])
+                files[filename][pattern['name']] = pattern
 
         return files
-
-    def get_regexs(self):
-        """Get a dictionary of pattern names to regex / extracted fields."""
-
-        regexs = {}
-        for _file in self.configuration['files']:
-            for pattern in _file['patterns']:
-                regexs[pattern['name']] = {
-                    'regex': pattern['regex'],
-                    'order': pattern['fields'],
-                    'datetime-format': pattern['datetime-format'],
-                }
-
-        return regexs
-
-    def get_tests(self):
-        """Get a dictionary of pattern names to regex tests."""
-
-        tests = {}
-        for _file in self.configuration['files']:
-            for pattern in _file['patterns']:
-                tests[pattern['name']] = pattern['tests']
-
-        return tests
-
-    def get_models(self):
-        """Get a dictionary of pattern names to fields."""
-
-        models = {}
-        for _file in self.configuration['files']:
-            for pattern in _file['patterns']:
-                models[pattern['name']] = pattern['fields']
-
-        return models

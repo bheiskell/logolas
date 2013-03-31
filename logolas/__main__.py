@@ -12,20 +12,51 @@ import logging
 
 _LOG = logging.getLogger(__name__)
 
-def test(regexs, tests):
+def test(files):
     """Perform tests."""
 
-    for pattern, regex in regexs.items():
-        parser = Parser(regex['regex'], regex['order'], regex['datetime-format'])
-        matches = parser.parse(tests[pattern])
+    for patterns in files.values():
+        for pattern in patterns.values():
+            parser = Parser(pattern['regex'], pattern['fields'], pattern['datetime-format'])
+            matches = parser.parse(pattern['tests'])
 
-        _LOG.info("Pattern %s", pattern)
-        for match in matches:
-            _LOG.info("\t%s", match)
+            _LOG.info("Pattern %s", pattern)
+            for match in matches:
+                _LOG.info("\t%s", match)
 
-        if len(matches) < len(tests[pattern]):
-            raise ValueError("Not all configured tests matched the regex!")
+            if len(matches) < len(pattern['tests']):
+                raise ValueError("Not all configured tests matched the regex!")
 
+def initialize_handler(configuration, engine):
+    """Initialize the handler from configuration."""
+
+    metadata = MetaData()
+
+    files = {}
+    parsers = {}
+    sinks = {}
+    for filename, patterns in configuration.get_file_to_patterns().items():
+
+        files[filename] = LogFile(filename)
+        parsers[filename] = []
+
+        for name, pattern in patterns.items():
+            parser = Parser(pattern['regex'], pattern['fields'], pattern['datetime-format'])
+
+            parsers[filename].append(parser)
+
+            sinks[parser] = Sink.generate_sink(engine, metadata, name, pattern['fields'])
+
+    # SqlAlchemy will auto create tables, but it will not update existing ones.
+    metadata.create_all(engine)
+
+    handler = Handler(files, parsers, sinks)
+    notifier = Handler.get_notifier(handler)
+
+    # Kick off a scan before blocking on file updates.
+    handler.handle_all()
+
+    return notifier
 
 def main():
     """Begin watching logs."""
@@ -35,38 +66,12 @@ def main():
     configuration = Configuration()
     configuration.load_yaml('sample/config.yml')
 
-    engine = create_engine('sqlite:///:memory:', pool_recycle=3600)
-    metadata = MetaData()
+    engine = create_engine(configuration.get_database_uri(), pool_recycle=3600)
 
-    test(configuration.get_regexs(), configuration.get_tests())
+    test(configuration.get_file_to_patterns())
 
-    models = configuration.get_models()
-    regexs = configuration.get_regexs()
-    parsers = {}
-    files = {}
-    sinks = {}
-    for filename, categories in configuration.get_files().items():
+    notifier = initialize_handler(configuration, engine)
 
-        files[filename] = LogFile(filename)
-
-        parsers[filename] = []
-
-        for category in categories:
-            parser = Parser(
-                regexs[category]['regex'],
-                regexs[category]['order'],
-                regexs[category]['datetime-format'],
-            )
-
-            parsers[filename].append(parser)
-
-            sinks[parser] = Sink.generate_sink(engine, metadata, category, models[category])
-
-    metadata.create_all(engine)
-
-    handler = Handler(files, parsers, sinks)
-    notifier = Handler.get_notifier(handler)
-    handler.handle_all()
     while True:
         try:
             Handler.handle_events(notifier)
