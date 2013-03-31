@@ -75,7 +75,9 @@ To launch the web interface, run::
   export LOGOLAS_CONFIG=config.py
   logolas_web
 
-TODO: wsgi
+If you plan on using SQLite, make sure you provide a fully qualified path to the database. The Flask framework changes the current working directory which will cause relative paths to break.
+
+TODO: wsgi configuration
 
 MySQL
 ~~~~~
