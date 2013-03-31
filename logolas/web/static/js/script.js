@@ -1,8 +1,4 @@
 $().ready(function() {
-	//template('[1]', ['user', 'time']).appendTo('fieldset:first');
-	//$('select[name*=conditional]').first().css('visibility', 'hidden');
-	//$('form').serialize();
-	//type.php
 
 	var container = $('#logs');
 
