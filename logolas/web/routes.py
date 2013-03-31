@@ -18,23 +18,58 @@ def index():
 @logolas.route('/field')
 def field():
     """Retrieve fields list."""
-
     return jsonify(fields=current_app.config['logolas']['fields'])
 
-def _get_filters():
+@logolas.route('/log')
+def log():
+    """Retrieve log entries."""
+
+    filters = _get_filters(request.args)
+    limit   = int(request.args['limit'])
+
+    current_app.logger.debug("Request (limit %s) %s", limit, filters)
+
+    logs = []
+    for (table, model) in current_app.config['logolas']['tables']:
+        if _applicable(table.columns, filters):
+            query = db.session.query(model)
+
+            columns = dict((column.name, column) for column in table.columns)
+
+            logic = _get_logic(columns, filters)
+
+            query = query.filter(logic).order_by(desc(columns['time'])).limit(limit)
+
+            current_app.logger.debug(query)
+
+            for row in query.all():
+                logs.append({
+                    'time': str(row.time),
+                    'id':   row.id,
+                    'type': table.name,
+                    'hash': '%s%s' % (table.name, row.id), # hash is used by the UI to avoid collisions
+                    'data': row.get_data(),
+                })
+
+    # The query sort is only to ensure the query limit gives us the right data set. Here we actually sort the results.
+    logs = sorted(logs, key=lambda log: log['time'])
+
+    # The query limit only narrows the number of results we get. Here we actually cut it off at limit.
+    logs = logs[-limit:]
+
+    return jsonify(logs=logs)
+
+def _get_filters(args):
     """Extract the filters from the URL."""
     filters = {}
 
-    for parameter, argument in request.args.items():
+    for parameter, argument in args.items():
         match = re.search(r'filters\[([0-9]+)\]\[([a-z]+)\]', parameter)
-        current_app.logger.debug("Filters %s", parameter)
         if match:
             (_index, _field) = match.groups()
             if not _index in filters:
                 filters[_index] = {}
             filters[_index][_field] = argument
-
-    current_app.logger.debug(filters)
 
     return filters.values()
 
@@ -43,10 +78,8 @@ def _applicable(columns, filters):
     result = True
 
     for _filter in filters:
-        if _filter['column'] not in [ x.name for x in columns ]:
+        if _filter['column'] not in [ column.name for column in columns ]:
             result = False
-
-            current_app.logger.debug("Column %s not found in %s", _filter['column'], columns)
 
     return result
 
@@ -64,7 +97,7 @@ def _get_logic(columns, filters):
         elif _filter['operator'] == 'LIKE':
             conditional = columns[_filter['column']].like(_filter['filter'])
         else:
-            pass
+            raise ValueError('%s is not a valid operator', _filter['operator'])
 
         if logic is None:
             logic = conditional
@@ -73,8 +106,7 @@ def _get_logic(columns, filters):
         elif _filter['conditional'] == 'OR':
             logic = or_(conditional, logic)
         else:
-            pass
-        current_app.logger.debug(logic)
+            raise ValueError('%s is not a valid conditional', _filter['conditional'])
 
     # If no logic is set, it's easier to just return true for use in the filter.
     if logic is None:
@@ -82,45 +114,3 @@ def _get_logic(columns, filters):
 
     return logic
 
-@logolas.route('/log')
-def log():
-    """Retrieve log entries."""
-
-    limit = request.args['limit']
-    filters = _get_filters()
-    tables = current_app.config['logolas']['tables']
-
-    current_app.logger.debug("Request (limit %s) %s", limit, filters)
-    current_app.logger.debug(tables)
-
-    results = {}
-    for (table, model) in tables:
-        if _applicable(table.columns, filters):
-            query = db.session.query(model)
-
-            columns = dict((column.name, column) for column in table.columns)
-
-            logic = _get_logic(columns, filters)
-
-            query = query.filter(logic).order_by(desc(columns['time'])).limit(limit)
-
-            current_app.logger.debug(query)
-
-            results[table.name] = query.all()
-
-    logs = []
-    for table_name, result in results.items():
-        for row in result:
-            logs.append({
-                'time': str(row.time),
-                'id':   row.id,
-                'type': table_name,
-                'hash': '%s%s' % (table_name, row.id),
-                'data': row.get_data(),
-            })
-
-    logs = sorted(logs, key=lambda x: x['time'])
-    logs = logs[-int(limit):]
-
-    current_app.logger.debug(logs)
-    return jsonify(logs=logs)
