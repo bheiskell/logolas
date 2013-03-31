@@ -1,4 +1,7 @@
-*.swp
 *.pyc
-/dist/
+*.swp
 /*.egg-info
+/build
+/config.yml
+/dist/
+/venv
