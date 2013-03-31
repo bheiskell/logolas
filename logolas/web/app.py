@@ -7,6 +7,7 @@ from logolas.model import get_table
 from sqlalchemy import or_, and_, desc
 
 import re
+import os
 
 logolas = Blueprint('logolas', __name__, template_folder='templates') #pylint: disable=C0103
 
@@ -52,6 +53,33 @@ def _applicable(columns, filters):
 
     return result
 
+def _get_logic(columns, filters):
+    """Get boolean logic for the query filter."""
+    logic = None
+    for _filter in filters:
+        conditional = None
+        if _filter['operator'] == '==':
+            conditional = columns[_filter['column']] == _filter['filter']
+        elif _filter['operator'] == '>=':
+            conditional = columns[_filter['column']] >= _filter['filter']
+        elif _filter['operator'] == '<=':
+            conditional = columns[_filter['column']] <= _filter['filter']
+        elif _filter['operator'] == 'LIKE':
+            conditional = columns[_filter['column']].like(_filter['filter'])
+        else:
+            pass
+
+        if logic is None:
+            logic = conditional
+        elif _filter['conditional'] == 'AND':
+            logic = and_(conditional, logic)
+        elif _filter['conditional'] == 'OR':
+            logic = or_(conditional, logic)
+        else:
+            pass
+        current_app.logger.debug(logic)
+    return logic
+
 @logolas.route('/log')
 def log():
     """Retrieve log entries."""
@@ -70,30 +98,7 @@ def log():
 
             columns = dict((x.name, x) for x in table.columns)
 
-            logic = None
-
-            for _filter in filters:
-                conditional = None
-                if _filter['operator'] == '==':
-                    conditional = columns[_filter['column']] == _filter['filter']
-                elif _filter['operator'] == '>=':
-                    conditional = columns[_filter['column']] >= _filter['filter']
-                elif _filter['operator'] == '<=':
-                    conditional = columns[_filter['column']] <= _filter['filter']
-                elif _filter['operator'] == 'LIKE':
-                    conditional = columns[_filter['column']].like(_filter['filter'])
-                else:
-                    pass
-
-                if logic is None:
-                    logic = conditional
-                elif _filter['conditional'] == 'AND':
-                    logic = and_(conditional, logic)
-                elif _filter['conditional'] == 'OR':
-                    logic = or_(conditional, logic)
-                else:
-                    pass
-                current_app.logger.debug(logic)
+            logic = _get_logic(columns, filters)
 
             query = query.filter(logic).order_by(desc(columns['time'])).limit(limit)
 
@@ -123,7 +128,7 @@ def application():
     app = Flask(__name__)
 
     configuration = Configuration()
-    configuration.load_yaml('config.yml')
+    configuration.load_yaml(os.environ['LOGOLAS_CONFIG'])
 
     app.register_blueprint(logolas)
 
