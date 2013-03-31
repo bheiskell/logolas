@@ -34,7 +34,7 @@ class Sink: #pylint: disable=R0903
         """Get the time for the latest entry in this Sink."""
         latest = session.query(func.max(self.table.columns.time)).scalar()
 
-        _LOG.info("Latest entry in %s %s", self.table, latest)
+        _LOG.debug("Latest entry in %s %s", self.table, latest)
 
         return latest
 
