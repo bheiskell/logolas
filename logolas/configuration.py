@@ -49,6 +49,7 @@ class Configuration(object):
                 regexs[pattern['name']] = {
                     'regex': pattern['regex'],
                     'order': pattern['fields'],
+                    'datetime-format': pattern['datetime-format'],
                 }
 
         return regexs

@@ -4,7 +4,7 @@ files:
 - path: sample/sample_server.log
   patterns:
   - name:            'message'
-    datetime-format: '%Y/%m/%d %H:%M:%S'
+    datetime-format: '%Y.%m.%d %H:%M:%S'
     regex:           '([0-9.]+) ([0-9:]+) \[([^\]]+)\] ([^ ]+)[^:]*: (.*)'
     fields:          [ date, time, channel, user, message ]
     tests:

@@ -16,7 +16,7 @@ def test(regexs, tests):
     """Perform tests."""
 
     for pattern, regex in regexs.items():
-        parser = Parser(regex['regex'], regex['order'], None)
+        parser = Parser(regex['regex'], regex['order'], regex['datetime-format'])
         matches = parser.parse(tests[pattern])
 
         _LOG.info("Pattern %s", pattern)
@@ -55,7 +55,7 @@ def main():
             parser = Parser(
                 regexs[category]['regex'],
                 regexs[category]['order'],
-                None
+                regexs[category]['datetime-format'],
             )
 
             parsers[filename].append(parser)

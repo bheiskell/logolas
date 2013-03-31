@@ -1,4 +1,5 @@
 """Parses a list of lines given a regular expression."""
+from datetime import datetime
 import re
 
 class Parser: #pylint: disable=R0903
@@ -18,8 +19,14 @@ class Parser: #pylint: disable=R0903
             match = re.search(self.regex, line)
             if match:
                 result = dict(zip(self.order, match.groups()))
-                results.append(result)
 
-        # TODO: add handling of datetime format
+                # standardize date & time to datetime
+                if 'date' in result and 'time' in result:
+                    result['datetime'] = "%s %s" % (result.pop('date'), result.pop('time'))
+
+                # parse input datetime to an actual datetime object
+                result['datetime'] = datetime.strptime(result['datetime'], self.datetime_format)
+
+                results.append(result)
 
         return results
