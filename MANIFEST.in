@@ -1,2 +1,3 @@
-*.txt
-*.rst
+include *.txt *.rst
+recursive-include logolas/web/templates *
+recursive-include logolas/web/static *

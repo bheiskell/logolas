@@ -68,11 +68,14 @@ Alternatively, deploy to the root python installation::
 Web
 ~~~
 
-I will document this section once the web version is ported to flask. Until then, you can use the PHP version if you like.
+To launch the web interface, run::
 
-Make sure all your pattern names end in "_log". Add your (MySQL only, sorry) connection information to the two php files. The database must be called logger. Lastly, copy all files in logolas/web/ into one directory, literally flattening the directory structure. E.g.::
+  cd logolas
+  . venv/bin/activate
+  export LOGOLAS_CONFIG=config.py
+  logolas_web
 
-  find logolas/web -exec mv {} /var/www/logolas \;
+TODO: wsgi
 
 MySQL
 ~~~~~

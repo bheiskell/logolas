@@ -155,6 +155,3 @@ def application():
             app.config['logolas_tables'].append((table, model))
 
     return app
-
-if __name__ == '__main__':
-    application().run(debug=True)

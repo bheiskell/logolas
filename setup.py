@@ -13,10 +13,14 @@ setup(
     keywords = "logging log",
     license='MIT',
     long_description=open('README.rst').read(),
-    packages=['logolas',],
+    packages=['logolas','logolas.web'],
     url = "http://github.com/bheiskell/logolas",
+    include_package_data = True,
     entry_points = {
-        'console_scripts': ['logolas=logolas.__main__:main'],
+        'console_scripts': [
+            'logolas=logolas.__main__:main',
+            'logolas_web=logolas.web.__main__:main',
+        ],
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
