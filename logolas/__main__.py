@@ -3,6 +3,7 @@
 from logolas.configuration import Configuration
 from logolas.handler import Handler
 from logolas.logfile import LogFile
+from logolas.model import get_table
 from logolas.parser import Parser
 from logolas.sink import Sink
 
@@ -46,7 +47,8 @@ def initialize_handler(configuration, engine):
 
             parsers[filename].append(parser)
 
-            sinks[parser] = Sink.generate_sink(engine, metadata, name, pattern['fields'])
+            (table, model) = get_table(metadata, name, pattern['fields'], pattern['order'])
+            sinks[parser] = Sink(engine, table, model)
 
     # SqlAlchemy will auto create tables, but it will not update existing ones.
     metadata.create_all(engine)

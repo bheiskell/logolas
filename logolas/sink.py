@@ -3,9 +3,8 @@ Sink is responsible for persisting parsed lines to the database.
 
 Additionally it provides deduplication.
 """
-from sqlalchemy import Table, Column, Integer, DateTime, String
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
-from sqlalchemy.orm import mapper, sessionmaker
 
 import logging
 
@@ -53,43 +52,3 @@ class Sink: #pylint: disable=R0903
                     session.add(self.model(entry))
 
         session.commit()
-
-    @staticmethod
-    def generate_table(metadata, name, fields):
-        """Generate a table for a Sink."""
-
-        table = Table(
-            name,
-            metadata,
-            Column('id', Integer, primary_key=True),
-            Column('time', DateTime)
-        )
-
-        for field in fields:
-            if field not in ['time', 'date']:
-                table.append_column(Column(field, String))
-
-        return table
-
-    @staticmethod
-    def generate_model(table):
-        """Generate a model given a table."""
-
-        class Model(object):
-            """Hackidacorus code to allow for dynamic Model generation."""
-            def __init__(self, entry):
-                for field, value in entry.items():
-                    self.__dict__[field] = value
-
-        mapper(Model, table)
-
-        return Model
-
-    @staticmethod
-    def generate_sink(engine, metadata, name, fields):
-        """Generate a Sink."""
-
-        table = Sink.generate_table(metadata, name, fields)
-        model = Sink.generate_model(table)
-
-        return Sink(engine, table, model)
