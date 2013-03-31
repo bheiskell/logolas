@@ -8,7 +8,7 @@ from yaml import dump
 #pylint: disable=R0904
 
 class TestConfiguration(TestCase):
-    """Test the dynamic creation of models."""
+    """Test the Configuration."""
 
     def setUp(self): #pylint: disable=C0103
         """Initialize"""
@@ -22,7 +22,7 @@ class TestConfiguration(TestCase):
         self.config.load_yaml(tmpfile.name)
 
     def test_mismatch(self):
-        """Test the loading of old yaml."""
+        """Test the loading of an old yaml version."""
 
         tmpfile = NamedTemporaryFile()
         dump({ 'version': -1 }, tmpfile)

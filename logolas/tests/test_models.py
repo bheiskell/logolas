@@ -19,8 +19,8 @@ class TestModels(TestCase):
         self.order = [ 'test2', 'test1' ]
         (self.table, self.model_class) = get_table(self.metadata, 'table', self.fields, self.order)
 
-    def test_construction(self):
-        """Initialize"""
+    def test_table(self):
+        """Test construction of the table"""
 
         self.assertEquals('table', self.table.name)
 
@@ -29,7 +29,7 @@ class TestModels(TestCase):
             self.assertIn(field, column_names)
 
     def test_model(self):
-        """Initialize"""
+        """Test the model"""
 
         model = self.model_class({'id': 1, 'time': datetime.now(), 'test1': 'test1', 'test2': 'test2'})
 
@@ -39,7 +39,7 @@ class TestModels(TestCase):
         self.assertEquals(1, model.id)
 
     def test_order(self):
-        """Initialize"""
+        """Test the model order of get_data"""
 
         model = self.model_class({'id': 1, 'time': datetime.now(), 'test1': 'test1', 'test2': 'test2'})
 

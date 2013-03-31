@@ -37,5 +37,5 @@ setup(
         'pyyaml==3.10',
     ],
     test_suite='nose.collector',
-    tests_require=['nose'],
+    tests_require=['nose', 'mock==1.0.1'],
 )
