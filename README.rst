@@ -70,7 +70,7 @@ Web
 
 I will document this section once the web version is ported to flask. Until then, you can use the PHP version if you like.
 
-Make sure all your pattern names end in "_log". Add your (MySQL only, sorry) connection information to the two php files. Lastly, copy all files in logolas/web/ into one directory, literally flattening the directory structure. E.g.::
+Make sure all your pattern names end in "_log". Add your (MySQL only, sorry) connection information to the two php files. The database must be called logger. Lastly, copy all files in logolas/web/ into one directory, literally flattening the directory structure. E.g.::
 
   find logolas/web -exec mv {} /var/www/logolas \;
 
