@@ -39,6 +39,8 @@ This started as a toy project, but I've decided to publish it as I can imagine t
 Installation
 ------------
 
+The following instructions assumes a debian based distribution.
+
 Using virtual environments::
 
   git clone https://github.com/bheiskell/logolas.git
@@ -48,9 +50,8 @@ Using virtual environments::
   . venv/bin/activate
   easy_install .
   cp sample/config.yml .
-  logolas config.yml
 
-Now any time in the future::
+To start the log scraper::
 
   cd logolas
   . venv/bin/activate
@@ -67,11 +68,15 @@ Alternatively, deploy to the root python installation::
 Web
 ~~~
 
-I will document this section once the web version is ported to flask. Until then, you can use the PHP version if you like. Just copy all files in logolas/web/ into one directory (literally flattening the directory structure). If your tables end in _log and you've added a MySQL connection info into the two php files, then it should just work.
+I will document this section once the web version is ported to flask. Until then, you can use the PHP version if you like.
+
+Make sure all your pattern names end in "_log". Add your (MySQL only, sorry) connection information to the two php files. Lastly, copy all files in logolas/web/ into one directory, literally flattening the directory structure. E.g.::
+
+  find logolas/web -exec mv {} /var/www/logolas \;
 
 MySQL
 ~~~~~
 
-If you choose to use MySQL with virtual environments, you'll need to install libmysqlclient-dev and python-dev.
+If you choose to use MySQL with virtual environments, you'll need to install libmysqlclient-dev and python-dev with aptitude. Then you can easy_install mysql-python.
 
 Alternatively, you should be able to simply install to python-mysqldb if you're not using virtual environments.
