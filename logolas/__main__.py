@@ -6,7 +6,7 @@ from logolas.logfile import LogFile
 from logolas.parser import Parser
 from logolas.sink import Sink
 
-from sqlalchemy import create_engine, Table, Column, Integer, DateTime, String, MetaData
+from sqlalchemy import create_engine, MetaData
 
 import logging
 
@@ -30,7 +30,7 @@ def test(regexs, tests):
 def main():
     """Begin watching logs."""
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     configuration = Configuration()
     configuration.load_yaml('sample/config.yml')
@@ -60,21 +60,7 @@ def main():
 
             parsers[filename].append(parser)
 
-            model = Table(
-                category,
-                metadata,
-                Column('id', Integer, primary_key=True),
-                Column('time', DateTime)
-            )
-
-            for field in models[category]:
-                if field not in ['time', 'date']:
-                    model.append_column(Column(field, String))
-
-            sinks[parser] = Sink(
-                engine=engine,
-                model=model
-            )
+            sinks[parser] = Sink.generate_sink(engine, metadata, category, models[category])
 
     metadata.create_all(engine)
 

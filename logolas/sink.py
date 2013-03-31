@@ -3,9 +3,9 @@ Sink is responsible for persisting parsed lines to the database.
 
 Additionally it provides deduplication.
 """
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Table, Column, Integer, DateTime, String
 from sqlalchemy.sql.expression import func
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import mapper, sessionmaker
 
 import logging
 
@@ -14,21 +14,12 @@ _LOG = logging.getLogger(__name__)
 class Sink: #pylint: disable=R0903
     """Persist parsed lines to the database."""
 
-    def __init__(self, engine=None, model=None):
+    def __init__(self, engine, table, model):
         self.engine = engine
         self.sessionmaker = sessionmaker(bind=engine)
-        self.table = model
+        self.table = table
+        self.model = model
         self.latest_at_start = None
-
-        class Model(object):
-            """Hackidacorus code to allow for dynamic Model generation."""
-            def __init__(self, entry):
-                for field, value in entry.items():
-                    self.__dict__[field] = value
-
-        self.model = Model
-
-        mapper(self.model, self.table)
 
     def _get_latest(self, session):
         """Get the time for the latest entry in this Sink."""
@@ -63,6 +54,41 @@ class Sink: #pylint: disable=R0903
         session.commit()
 
     @staticmethod
-    def generate_model():
-        """Generate a model for a Sink."""
-        pass
+    def generate_table(metadata, name, fields):
+        """Generate a table for a Sink."""
+
+        table = Table(
+            name,
+            metadata,
+            Column('id', Integer, primary_key=True),
+            Column('time', DateTime)
+        )
+
+        for field in fields:
+            if field not in ['time', 'date']:
+                table.append_column(Column(field, String))
+
+        return table
+
+    @staticmethod
+    def generate_model(table):
+        """Generate a model given a table."""
+
+        class Model(object):
+            """Hackidacorus code to allow for dynamic Model generation."""
+            def __init__(self, entry):
+                for field, value in entry.items():
+                    self.__dict__[field] = value
+
+        mapper(Model, table)
+
+        return Model
+
+    @staticmethod
+    def generate_sink(engine, metadata, name, fields):
+        """Generate a Sink."""
+
+        table = Sink.generate_table(metadata, name, fields)
+        model = Sink.generate_model(table)
+
+        return Sink(engine, table, model)
