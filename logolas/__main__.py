@@ -8,6 +8,7 @@ from logolas.parser import Parser
 from logolas.sink import Sink
 
 from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
 
 import logging
 import sys
@@ -48,7 +49,7 @@ def initialize_handler(configuration, engine):
             parsers[filename].append(parser)
 
             (table, model) = get_table(metadata, name, pattern['fields'], pattern['order'])
-            sinks[parser] = Sink(engine, table, model)
+            sinks[parser] = Sink(sessionmaker(bind=engine), table, model)
 
     # SqlAlchemy will auto create tables, but it will not update existing ones.
     metadata.create_all(engine)

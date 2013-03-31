@@ -1,9 +1,9 @@
 """
 Sink is responsible for persisting parsed lines to the database.
 
-Additionally it provides deduplication.
+Additionally it provides deduplication of log entries.
 """
-from sqlalchemy.orm import sessionmaker
+
 from sqlalchemy.sql.expression import func
 
 import logging
@@ -13,9 +13,8 @@ _LOG = logging.getLogger(__name__)
 class Sink: #pylint: disable=R0903
     """Persist parsed lines to the database."""
 
-    def __init__(self, engine, table, model):
-        self.engine = engine
-        self.sessionmaker = sessionmaker(bind=engine)
+    def __init__(self, sessionmaker, table, model):
+        self.sessionmaker = sessionmaker
         self.table = table
         self.model = model
         self.latest_at_start = None
