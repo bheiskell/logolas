@@ -2,12 +2,10 @@
 
 from flask import Flask, render_template, jsonify, Blueprint, current_app, request
 from flask.ext.sqlalchemy import SQLAlchemy #pylint: disable=E0611,F0401
-from logolas.configuration import Configuration
 from logolas.model import get_table
 from sqlalchemy import or_, and_, desc
 
 import re
-import os
 
 logolas = Blueprint('logolas', __name__, template_folder='templates') #pylint: disable=C0103
 
@@ -127,12 +125,9 @@ def log():
     current_app.logger.debug(logs)
     return jsonify(logs=logs)
 
-def application():
+def application(configuration):
     """Application factory."""
     app = Flask(__name__)
-
-    configuration = Configuration()
-    configuration.load_yaml(os.environ['LOGOLAS_CONFIG'])
 
     app.register_blueprint(logolas)
 

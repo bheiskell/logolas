@@ -15,7 +15,9 @@ import sys
 
 _LOG = logging.getLogger(__name__)
 
-def test(files):
+# TODO: Separate the factory code from the untestable code
+
+def sanity_check_configuration(files):
     """Perform tests."""
 
     for patterns in files.values():
@@ -49,6 +51,7 @@ def initialize_handler(configuration, engine):
             parsers[filename].append(parser)
 
             (table, model) = get_table(metadata, name, pattern['fields'], pattern['order'])
+
             sinks[parser] = Sink(sessionmaker(bind=engine), table, model)
 
     # SqlAlchemy will auto create tables, but it will not update existing ones.
@@ -75,7 +78,7 @@ def main():
 
     engine = create_engine(configuration.get_database_uri(), pool_recycle=3600)
 
-    test(configuration.get_file_to_patterns())
+    sanity_check_configuration(configuration.get_file_to_patterns())
 
     notifier = initialize_handler(configuration, engine)
 
