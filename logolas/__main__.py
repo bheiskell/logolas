@@ -9,6 +9,7 @@ from logolas.sink import Sink
 from sqlalchemy import create_engine, MetaData
 
 import logging
+import sys
 
 _LOG = logging.getLogger(__name__)
 
@@ -63,8 +64,11 @@ def main():
 
     logging.basicConfig(level=logging.INFO)
 
+    if len(sys.argv) != 2:
+        sys.exit('Usage: %s config.yml' % sys.argv[0])
+
     configuration = Configuration()
-    configuration.load_yaml('sample/config.yml')
+    configuration.load_yaml(sys.argv[1])
 
     engine = create_engine(configuration.get_database_uri(), pool_recycle=3600)
 
