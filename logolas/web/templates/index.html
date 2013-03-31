@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <title>Logger</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css" />
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery.maskedinput.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/script.js') }}" type="text/javascript"></script>
+    </head>
+    <body>
+        <h1>Logger</h1>
+        <h2 id="javascript_notice">Please enable JavaScript</h2>
+        <script type="text/javascript">
+            document.getElementById("javascript_notice").style.display = "none";
+
+            $().ready(function() {
+                Logolas('{{ url_for('logolas.field') }}', '{{ url_for('logolas.log') }}');
+            });
+        </script>
+        <div id="filter">
+            <h2>Filter</h2>
+            <form action="{{ url_for('logolas.log') }}" method="get">
+                <fieldset>
+                </fieldset>
+                <label>
+                    Limit
+                    <input type="text" name="limit" value="100" />
+                </label>
+            </form>
+        </div>
+        <div id="logs">
+        </div>
+    </body>
+</html>
