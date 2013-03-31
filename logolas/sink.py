@@ -3,7 +3,10 @@ Sink is responsible for persisting parsed lines to the database.
 
 Additionally it provides deduplication.
 """
-#import MySQLdb
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.expression import func
+from sqlalchemy.orm import mapper
+
 import logging
 
 _LOG = logging.getLogger(__name__)
@@ -13,57 +16,54 @@ class Sink: #pylint: disable=R0903
 
     def __init__(self, engine=None, model=None):
         self.engine = engine
-        self.model = model
+        self.sessionmaker = sessionmaker(bind=engine)
+        self.table = model
         self.latest = None
 
-    def get_latest(self):
-        """Get the time for the latest entry in this Sink."""
+        class Model(object):
+            """Hackidacorus code to allow for dynamic Model generation."""
+            def __init__(self, entry):
+                for field, value in entry.items():
+                    self.__dict__[field] = value
 
-        #latest = "SELECT MAX(time) FROM %s" % ( self.table )
-        #cursor = self.connection.cursor()
-        #cursor.execute(latest)
-        #self.latest = cursor.fetchone()[0]
-        _LOG.info("Latest entry in Sink %s", self.latest)
+        self.model = Model
+
+        mapper(self.model, self.table)
+
+    def get_latest(self, session):
+        """Get the time for the latest entry in this Sink."""
+        self.latest = session.query(func.max(self.table.columns.time)).scalar()
+
+        _LOG.info("Latest entry in %s %s", self.table, self.latest)
 
     def sink(self, entries):
         """Persist the lines to the database."""
 
+        _LOG.error(dir())
+
+        session = self.sessionmaker()
+
         if self.latest == None:
-            self.get_latest()
+            self.get_latest(session)
 
         for entry in entries:
 
-            # Need datetime-format and need to convert this into a SQL date
-            entry['datetime'] = ""
+            if self.latest == None or entry['datetime'] >= str(self.latest):
 
-            if entry['datetime'] >= str(self.latest):
+                query = session.query(func.count(self.table.columns.time))
 
-                pass
-                #cursor = self.connection.cursor()
+                for field, value in entry.items():
+                    query = query.filter(self.table.columns.get(field) == value)
 
-                # Utilizing ugly syntax to generate the prepared statements
-                #exists = """
-                #    SELECT COUNT(*) FROM %s WHERE
-                #        %s
-                #    """ % (self.table,  ' AND '.join(["%s = %%s" % field for field in self.fields]))
+                if 0 == query.scalar():
+                    _LOG.info("%s >= %s: %s", \
+                        entry['datetime'], \
+                        self.latest, \
+                        entry.values())
 
-                #insert = """
-                #    INSERT INTO %s (
-                #        %s
-                #    ) VALUES (
-                #        %s
-                #    )
-                #    """% (self.table,  ', '.join(self.fields), ', '.join(['%s'] * len(self.fields)))
+                    session.add(self.model(entry))
 
-                #data = [entry[field] for field in self.fields]
-
-                #_LOG.info("Time %s >= %s: %s", entry['datetime'], str(self.latest), data )
-
-                #cursor.execute(exists, data)
-
-                #if 0 == cursor.fetchone()[0]:
-                #    cursor.execute(insert, (data))
-                #cursor.close()
+        session.commit()
 
     @staticmethod
     def generate_model():
