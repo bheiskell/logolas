@@ -35,7 +35,7 @@ def main():
     configuration = Configuration()
     configuration.load_yaml('sample/config.yml')
 
-    engine = create_engine('sqlite:///:memory:', echo=True, pool_recycle=3600)
+    engine = create_engine('sqlite:///:memory:', pool_recycle=3600)
     metadata = MetaData()
 
     test(configuration.get_regexs(), configuration.get_tests())

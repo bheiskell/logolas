@@ -1,2 +1,2 @@
-2013.01.01 00:00:00 UserA -> UserB: singleword!
-2013.01.01 10:00:00 UserA -> UserB: multi word!
+2013.01.01 00:00:00 [Channel] UserA: singleword!
+2013.01.01 10:00:00 [Channel] UserA: multi word!
