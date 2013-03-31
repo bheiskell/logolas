@@ -1,0 +1,113 @@
+/*/ BEGIN RESET //////////////////////////////////////////////////////////////*/
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+/*/ END RESET ////////////////////////////////////////////////////////////////*/
+
+body {
+	font-family: Trebuchet MS,Liberation Sans,DejaVu Sans,sans-serif;
+	font-size: 12px;
+	padding: 1em;
+}
+h1 {
+	font-size: 2em;
+	padding-bottom: 0.5em;
+}
+
+ol {
+	list-style-type: none;
+	overflow: hidden;
+	margin: 0;
+}
+ol li {
+	border: 1px solid #eee;
+	float: left;
+	margin: 1px;
+	padding: 0.75em 1em 0.25em;
+	position: relative;
+}
+ol:hover li { background-color: #eee; }
+
+ol li:nth-child(2) { width: 50px; }
+ol li:nth-child(3) { width: 100px; }
+ol li:nth-child(4) { width: 75px; }
+ol li.message { width: 400px; }
+ol li.command { width: 400px; }
+
+ol li:after {
+	display: block;
+	position: absolute;
+	font-size: 0.75em;
+	color: #ccc;
+	padding: 0 2px;
+	left: 0;
+	top: 0;
+}
+ol li.user:after      { content: 'user'; }
+ol li.message:after   { content: 'message'; }
+ol li.channel:after   { content: 'channel'; }
+ol li.ip:after        { content: 'ip'; }
+ol li.command:after   { content: 'command'; }
+ol li.admin:after     { content: 'admin'; }
+ol li.reason:after    { content: 'reason'; }
+ol li.recipient:after { content: 'recipient'; }
+ol li.action:after    { content: 'action'; }
+ol li.item:after      { content: 'item'; }
+ol li.price:after     { content: 'price'; }
+ol li.amount:after    { content: 'amount'; }
+ol li.shop:after      { content: 'shop'; }
+
+#filter {
+	background-color: #f4f4f4;
+	border-bottom-left-radius: 0.5em;
+	overflow: hidden;
+	padding: 0.5em;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 500px;
+	z-index: 999;
+}
+#filter h2 { color: #444; font-size: 1.5em; }
+#filter fieldset { padding: 0.5em; }
+#filter fieldset fieldset { border-left: 2px solid #ddd; }
