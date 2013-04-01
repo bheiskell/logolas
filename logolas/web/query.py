@@ -19,7 +19,7 @@ def get_query_filter(columns, filters):
 
     for _filter in filters:
         conditional = None
-        if _filter['operator'] == '==':
+        if _filter['operator'] == '=':
             conditional = columns[_filter['column']] == _filter['filter']
         elif _filter['operator'] == '>=':
             conditional = columns[_filter['column']] >= _filter['filter']
