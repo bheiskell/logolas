@@ -2,8 +2,11 @@
 
 import logging
 import pyinotify
+from os.path import dirname
 
 _LOG = logging.getLogger(__name__)
+
+MASK = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF
 
 class Handler(pyinotify.ProcessEvent):
     """Dispatch inotify events to the Handler."""
@@ -14,18 +17,29 @@ class Handler(pyinotify.ProcessEvent):
         self.files   = files
         self.parsers = parsers
         self.sinks   = sinks
+        self.watchmanager = None
+
+    def set_watchmanager(self, watchmanager):
+        """Set the watch manager used to lookup original filename in IN_MOVE_SELF."""
+        self.watchmanager = watchmanager
+
+    def process_IN_CREATE(self, event): #pylint: disable=C0103
+        """Handle the creation of a previously watched file."""
+
+        _LOG.debug("Entering process_IN_CREATE %s", event.path)
+
+        for filename in self.files.keys():
+            if filename.startswith(event.path):
+                _LOG.info("Watched file has been recreated: %s", event.path)
+
+                self.watchmanager.add_watch(filename, MASK)
+                self.files[filename].load()
 
     def process_IN_MOVE_SELF(self, event): #pylint: disable=C0103
-        """Handle a file move event."""
+        """Handle the removal of a file and the unregistering from watch manager."""
 
-        _LOG.debug("Entering process_IN_MOVE_SELF %s", event.path)
-        self.reload(event.path)
-
-    def process_IN_CLOSE_WRITE(self, event): #pylint: disable=C0103
-        """Handle a file close write event."""
-
-        _LOG.debug("Entering process_IN_CLOSE_WRITE %s", event.path)
-        self.reload(event.path)
+        _LOG.info("Removing previous watch on moved file: %s", event.path)
+        self.watchmanager.del_watch(event.wd)
 
     def process_IN_MODIFY(self, event): #pylint: disable=C0103
         """Handle a file modify event."""
@@ -61,12 +75,14 @@ class Handler(pyinotify.ProcessEvent):
 
         # pylint incorrectly reand the pyinotify constant #pylint: disable=E1101
         watchmanager = pyinotify.WatchManager()
-        mask = pyinotify.IN_MODIFY | pyinotify.IN_MOVE_SELF | pyinotify.IN_CLOSE_WRITE
 
         filenames = handler.files.keys()
 
         for filename in filenames:
-            watchmanager.add_watch(filename, mask)
+            watchmanager.add_watch(filename, MASK)
+            watchmanager.add_watch(dirname(filename), pyinotify.IN_CREATE)
+
+        handler.set_watchmanager(watchmanager)
 
         return pyinotify.Notifier(watchmanager, handler)
 
@@ -82,4 +98,3 @@ class Handler(pyinotify.ProcessEvent):
         except KeyboardInterrupt, exception:
             notifier.stop()
             raise exception
-
